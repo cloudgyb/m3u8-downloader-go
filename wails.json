@@ -1,0 +1,20 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "m3u8-downloader",
+  "outputfilename": "m3u8-downloader",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "cloudgyb",
+    "email": "gyb_cloud@163.com"
+  },
+  "info": {
+    "companyName": "CloudGYB",
+    "productName": "M3U8 Downloader",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright @cloudgyb",
+    "comments": "高速M3U8流媒体下载器"
+  }
+}
