@@ -87,6 +87,17 @@ func (a *App) AddHistory(h HistoryItem) int64 {
 	return id
 }
 
+func (a *App) RemoveHistory(id int64) error {
+	if a.store == nil {
+		return nil
+	}
+	_, err := a.store.DeleteHistory(id)
+	if err != nil {
+		log.Printf("DeleteHistory: %v", err)
+	}
+	return nil
+}
+
 func (a *App) ClearHistory() error {
 	if a.store == nil {
 		return nil

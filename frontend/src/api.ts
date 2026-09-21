@@ -76,6 +76,12 @@ export async function addHistory(h: HistoryItem): Promise<number> {
   return id
 }
 
+export async function removeHistory(id: number): Promise<void> {
+  if(isWails) {
+    return backend.RemoveHistory(id)
+  }
+}
+
 export async function clearHistory(): Promise<void> {
   if (isWails) return backend.ClearHistory()
   localStorage.removeItem(LS_HISTORY)

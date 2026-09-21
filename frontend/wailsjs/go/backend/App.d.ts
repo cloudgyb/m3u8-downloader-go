@@ -26,6 +26,8 @@ export function PauseDownload(arg1:number):Promise<void>;
 
 export function Quit():Promise<void>;
 
+export function RemoveHistory(arg1:number):Promise<void>;
+
 export function ResumeDownload(arg1:number):Promise<void>;
 
 export function SaveSettings(arg1:backend.Settings):Promise<void>;

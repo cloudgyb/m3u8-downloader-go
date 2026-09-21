@@ -3,6 +3,7 @@ package backend
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -96,7 +97,7 @@ func (s *Store) GetSettings() (Settings, error) {
 	cfg := defaultSettings()
 	var raw string
 	err := s.db.QueryRow(`SELECT value FROM kv WHERE key = 'settings'`).Scan(&raw)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return cfg, nil
 	}
 	if err != nil {
@@ -159,6 +160,18 @@ func (s *Store) AddHistory(h HistoryItem) (int64, error) {
 		return 0, err
 	}
 	return res.LastInsertId()
+}
+
+func (s *Store) DeleteHistory(id int64) (int64, error) {
+	exec, err := s.db.Exec(`DELETE FROM history WHERE id = ?`, id)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := exec.RowsAffected()
+	if err != nil {
+		return affected, err
+	}
+	return affected, nil
 }
 
 func (s *Store) ClearHistory() error {

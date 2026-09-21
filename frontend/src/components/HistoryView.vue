@@ -1,13 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { NButton } from 'naive-ui'
+import {computed} from 'vue'
+import {NButton} from 'naive-ui'
 import SvgIcon from './SvgIcon.vue'
 import Segmented from './Segmented.vue'
-import { t } from '../i18n'
-import { state, filteredHistory, setHistFilter, clearHistory, redoTask, openFolder } from '../store'
-import { fmtBytes } from '../utils'
-import { iconNameForStatus, toneForStatus } from '../icons'
-import type { HistFilter, HistoryItem } from '../types'
+import {t} from '../i18n'
+import {
+  clearHistory,
+  filteredHistory,
+  openFolder,
+  redoTask,
+  refreshHistory,
+  removeHistoryItem,
+  setHistFilter,
+  state
+} from '../store'
+import {fmtBytes} from '../utils'
+import {iconNameForStatus, toneForStatus} from '../icons'
+import type {HistFilter, HistoryItem} from '../types'
 
 const filter = computed<string>({
   get: () => state.histFilter,
@@ -15,14 +24,15 @@ const filter = computed<string>({
 })
 
 const filterOptions = [
-  { value: 'all', label: t('hist.filter.all') },
-  { value: 'done', label: t('hist.filter.done') },
-  { value: 'fail', label: t('hist.filter.fail') },
+  {value: 'all', label: t('hist.filter.all')},
+  {value: 'done', label: t('hist.filter.done')},
+  {value: 'fail', label: t('hist.filter.fail')},
 ]
 
 function sizeText(h: HistoryItem): string {
   return h.status === 'completed' || h.size > 0 ? fmtBytes(h.size) : '—'
 }
+
 function badgeClass(status: string): string {
   return status === 'completed' ? 'badge-success' : 'badge-danger'
 }
@@ -32,9 +42,17 @@ function badgeClass(status: string): string {
   <div class="page-head tasks-head">
     <div><h1>{{ t('hist.title') }}</h1></div>
     <div class="tasks-actions">
-      <Segmented v-model="filter" :options="filterOptions" />
+      <Segmented v-model="filter" :options="filterOptions"/>
+      <NButton secondary @click="refreshHistory()">
+        <template #icon>
+          <SvgIcon name="refresh"/>
+        </template>
+        {{ t('toast.refresh') }}
+      </NButton>
       <NButton secondary @click="clearHistory()">
-        <template #icon><SvgIcon name="trash" /></template>
+        <template #icon>
+          <SvgIcon name="trash"/>
+        </template>
         {{ t('hist.clear') }}
       </NButton>
     </div>
@@ -42,13 +60,13 @@ function badgeClass(status: string): string {
 
   <div class="card list">
     <div v-if="!filteredHistory.length" class="empty">
-      <SvgIcon name="clock" />
+      <SvgIcon name="clock"/>
       <p>{{ t('hist.empty') }}</p>
     </div>
 
     <div v-for="h in filteredHistory" :key="h.id" class="hist-row">
       <div class="task-icon" :class="'tone-' + toneForStatus(h.status)">
-        <SvgIcon :name="iconNameForStatus(h.status)" />
+        <SvgIcon :name="iconNameForStatus(h.status)"/>
       </div>
       <div class="task-main">
         <div class="task-title od-truncate" :title="h.name">{{ h.name }}</div>
@@ -64,21 +82,30 @@ function badgeClass(status: string): string {
       </div>
       <div class="task-actions">
         <button
-          v-if="h.status !== 'completed'"
-          class="icon-btn"
-          :title="t('hist.redownload')"
-          :aria-label="t('hist.redownload')"
-          @click="redoTask(h)"
+            v-if="h.status !== 'completed'"
+            class="icon-btn"
+            :title="t('hist.redownload')"
+            :aria-label="t('hist.redownload')"
+            @click="redoTask(h)"
         >
-          <SvgIcon name="refresh" />
+          <SvgIcon name="refresh"/>
         </button>
         <button
-          class="icon-btn"
-          :title="t('hist.openFolder')"
-          :aria-label="t('hist.openFolder')"
-          @click="openFolder(h)"
+            class="icon-btn"
+            :title="t('hist.openFolder')"
+            :aria-label="t('hist.openFolder')"
+            @click="openFolder(h)"
         >
-          <SvgIcon name="folder" />
+          <SvgIcon name="folder"/>
+        </button>
+
+        <button
+            class="icon-btn"
+            :title="t('toast.delete')"
+            :aria-label="t('toast.delete')"
+            @click="removeHistoryItem(h.id)"
+        >
+          <SvgIcon name="trash"/>
         </button>
       </div>
     </div>

@@ -50,6 +50,10 @@ export function Quit() {
   return window['go']['backend']['App']['Quit']();
 }
 
+export function RemoveHistory(arg1) {
+  return window['go']['backend']['App']['RemoveHistory'](arg1);
+}
+
 export function ResumeDownload(arg1) {
   return window['go']['backend']['App']['ResumeDownload'](arg1);
 }
