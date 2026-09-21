@@ -167,8 +167,8 @@ svg { display: block; }
   .sb-btn:hover { border-color: var(--accent); color: var(--accent-ink); }
 }
 
-.content { overflow-y: auto; padding: 28px 32px; min-height: 0; }
-.view { max-width: 1040px; }
+.content { overflow-y: auto; overflow-x: hidden; padding: 28px 32px; min-height: 0; }
+.view { width: 100%; }
 
 .statusbar {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -297,7 +297,7 @@ svg { display: block; }
 .input-row .input { flex: 1; min-width: 0; }
 
 /* ─── responsive & motion ──────────────────────────────────── */
-@media (max-width: 860px) {
+@media (max-width: 1024px) {
   .app { grid-template-columns: 62px minmax(0, 1fr); }
   .nav-item { justify-content: center; padding: 8px 0; }
   .nav-item span, .sb-btn span { display: none; }
