@@ -154,7 +154,6 @@ function onKey(e: KeyboardEvent) {
       <div class="kv"><span>{{ t('status.proxy') }}</span><b>{{ proxySummary }}</b></div>
       <div class="kv"><span>{{ t('dl.saveTo') }}</span><b class="mono">{{ state.settings.saveDir }}</b></div>
       <div class="kv"><span>{{ t('set.update.current') }}</span><b class="mono">{{ state.settings.currentVersion }}</b></div>
-      <p class="stack-hint">Go + Wails · Vue + TypeScript<br />Naive UI · SQLite</p>
     </aside>
   </div>
 </template>
