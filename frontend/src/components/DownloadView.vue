@@ -46,6 +46,14 @@ function variantLabel(v: Variant): string {
 
 const variantOptions = computed(() => variants.value.map((v) => ({ value: v.uri, label: variantLabel(v) })))
 
+async function loadVariantsIfUrlAvailable() {
+  const u = url.value.trim()
+  if (!/^https?:\/\//i.test(u) || !u.endsWith('.m3u8')) {
+    return
+  }
+  await loadVariants()
+}
+
 async function loadVariants() {
   const u = url.value.trim()
   if (!/^https?:\/\//i.test(u)) {
@@ -116,6 +124,7 @@ function onKey(e: KeyboardEvent) {
           spellcheck="false"
           autocomplete="off"
           @blur="loadVariants"
+          @input="loadVariantsIfUrlAvailable"
           @keydown="onKey"
         />
         <p v-if="error" class="error">{{ error }}</p>
@@ -130,7 +139,7 @@ function onKey(e: KeyboardEvent) {
           @keydown="onKey"
         />
       </div>
-      <div v-if="variants.length > 1" class="field">
+      <div v-if="variants.length >= 1" class="field">
         <label class="label">{{ t('dl.variant') }}</label>
         <NSelect v-model:value="selectedVariant" :options="variantOptions" :loading="loadingVariants" />
       </div>
