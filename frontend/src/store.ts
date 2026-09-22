@@ -33,9 +33,13 @@ export const state = reactive({
 
 // ── theme ────────────────────────────────────────────────────────────────
 
+// Reactive mirror of the OS color-scheme preference so `isDark` recomputes
+// (and Naive UI re-themes) when the system theme changes.
+const systemDark = ref(window.matchMedia('(prefers-color-scheme: dark)').matches)
+
 export function resolvedTheme(): 'light' | 'dark' {
     if (state.theme === 'system') {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        return systemDark.value ? 'dark' : 'light'
     }
     return state.theme
 }
@@ -411,7 +415,8 @@ export async function init() {
     }
     syncThemeAttr()
 
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        systemDark.value = e.matches
         if (state.theme === 'system') syncThemeAttr()
     })
 
