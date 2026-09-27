@@ -101,6 +101,7 @@ export namespace backend {
 	    proxyPort: number;
 	    updateMode: string;
 	    currentVersion: string;
+	    clipboardWatch: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -119,6 +120,7 @@ export namespace backend {
 	        this.proxyPort = source["proxyPort"];
 	        this.updateMode = source["updateMode"];
 	        this.currentVersion = source["currentVersion"];
+	        this.clipboardWatch = source["clipboardWatch"];
 	    }
 	}
 	export class Variant {

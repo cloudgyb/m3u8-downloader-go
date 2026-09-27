@@ -13,6 +13,7 @@ type Settings struct {
 	ProxyPort      int    `json:"proxyPort"`
 	UpdateMode     string `json:"updateMode"`
 	CurrentVersion string `json:"currentVersion"`
+	ClipboardWatch bool   `json:"clipboardWatch"`
 }
 
 // HistoryItem is a completed, failed or canceled download record.
@@ -43,5 +44,6 @@ func defaultSettings() Settings {
 		ProxyPort:      7890,
 		UpdateMode:     "auto",
 		CurrentVersion: defaultVersion,
+		ClipboardWatch: true,
 	}
 }

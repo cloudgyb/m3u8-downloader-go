@@ -16,6 +16,7 @@ export interface Settings {
   proxyPort: number
   updateMode: 'auto' | 'manual'
   currentVersion: string
+  clipboardWatch: boolean
 }
 
 export interface Task {
@@ -64,4 +65,5 @@ export const DEFAULT_SETTINGS: Settings = {
   proxyPort: 7890,
   updateMode: 'auto',
   currentVersion: 'v1.2.0',
+  clipboardWatch: true,
 }

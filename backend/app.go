@@ -5,6 +5,7 @@ import (
 	"log"
 	"os/exec"
 	"runtime"
+	"sync/atomic"
 
 	wruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -12,9 +13,10 @@ import (
 // App is the backend service bound to the frontend. Every exported method
 // becomes callable from JavaScript through Wails' generated bindings.
 type App struct {
-	ctx   context.Context
-	store *Store
-	dl    *DownloadManager
+	ctx            context.Context
+	store          *Store
+	dl             *DownloadManager
+	clipboardWatch atomic.Bool
 }
 
 // NewApp creates the application struct and opens the local database.
@@ -32,6 +34,8 @@ func (a *App) OnStartup(ctx context.Context) {
 	a.dl.SetEmitter(func(eventName string, data interface{}) {
 		wruntime.EventsEmit(ctx, eventName, data)
 	})
+	a.clipboardWatch.Store(a.GetSettings().ClipboardWatch)
+	a.startClipboardWatcher()
 }
 
 // OnShutdown closes the database when the app quits.
@@ -56,6 +60,7 @@ func (a *App) GetSettings() Settings {
 }
 
 func (a *App) SaveSettings(cfg Settings) error {
+	a.clipboardWatch.Store(cfg.ClipboardWatch)
 	if a.store == nil {
 		return nil
 	}

@@ -25,6 +25,10 @@ const notify = computed<boolean>({
   get: () => state.settings.notify,
   set: (v) => updateSettings({ notify: v }, true),
 })
+const clipboardWatch = computed<boolean>({
+  get: () => state.settings.clipboardWatch,
+  set: (v) => updateSettings({ clipboardWatch: v }, true),
+})
 const format = computed<'ts' | 'mp4'>({
   get: () => state.settings.format,
   set: (v) => updateSettings({ format: v }, true),
@@ -115,6 +119,13 @@ async function browse() {
       <div class="field switch-row">
         <div><label class="label">{{ t('set.notify') }}</label></div>
         <NSwitch v-model:value="notify" />
+      </div>
+      <div class="field switch-row">
+        <div>
+          <label class="label">{{ t('set.clipboard') }}</label>
+          <p class="hint">{{ t('set.clipboardHint') }}</p>
+        </div>
+        <NSwitch v-model:value="clipboardWatch" />
       </div>
       <div class="field">
         <label class="label">{{ t('set.format') }}</label>

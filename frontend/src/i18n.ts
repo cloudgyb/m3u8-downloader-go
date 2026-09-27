@@ -27,6 +27,7 @@ const zh: Record<string, string> = {
   'set.sec.download': '下载设置', 'set.sec.network': '网络代理', 'set.sec.appearance': '外观', 'set.sec.update': '更新',
   'set.threads': '默认线程数', 'set.threadsHint': '1–32，数值越高占用带宽越多',
   'set.concurrent': '并发下载数', 'set.saveDir': '默认保存目录', 'set.browse': '浏览', 'set.notify': '下载完成后通知',
+  'set.clipboard': '自动识别剪贴板', 'set.clipboardHint': '复制 M3U8 链接时自动弹出下载确认框',
   'set.format': '输出格式', 'set.format.mp4': 'MP4（转封装）', 'set.format.ts': 'TS（原始流）',
   'set.format.ffmpegHint': '未检测到 ffmpeg，将输出 TS 原始流',
   'set.proxy.enable': '启用本地代理', 'set.proxy.type': '代理类型', 'set.proxy.host': '代理地址', 'set.proxy.port': '端口',
@@ -46,6 +47,8 @@ const zh: Record<string, string> = {
   'toast.demo': '原型演示', 'toast.window': '演示环境不支持窗口操作',
   'toast.browse': '真实应用中将调用系统目录选择器', 'toast.update': '已开始下载更新…',
   'toast.openFolder': '已在资源管理器中打开',
+  'clip.title': '发现下载链接', 'clip.hint': '检测到剪贴板中的 M3U8 链接，勾选需要下载的项：',
+  'clip.download': '下载所选', 'clip.cancel': '取消',
   'win.min': '最小化', 'win.max': '最大化', 'win.close': '关闭',
   'err.timeout': '网络超时', 'err.canceled': '任务已取消',
 }
@@ -76,6 +79,7 @@ const en: Record<string, string> = {
   'set.sec.download': 'Download', 'set.sec.network': 'Network proxy', 'set.sec.appearance': 'Appearance', 'set.sec.update': 'Update',
   'set.threads': 'Default threads', 'set.threadsHint': '1–32, higher values use more bandwidth',
   'set.concurrent': 'Concurrent downloads', 'set.saveDir': 'Default save directory', 'set.browse': 'Browse', 'set.notify': 'Notify when download completes',
+  'set.clipboard': 'Auto-detect clipboard', 'set.clipboardHint': 'Prompt to download when an M3U8 link is copied',
   'set.format': 'Output format', 'set.format.mp4': 'MP4 (remux)', 'set.format.ts': 'TS (raw stream)',
   'set.format.ffmpegHint': 'ffmpeg not found; will output raw TS',
   'set.proxy.enable': 'Enable local proxy', 'set.proxy.type': 'Proxy type', 'set.proxy.host': 'Proxy host', 'set.proxy.port': 'Port',
@@ -94,6 +98,8 @@ const en: Record<string, string> = {
   'toast.demo': 'Demo', 'toast.window': 'Window controls unavailable in demo',
   'toast.browse': 'The real app uses the OS directory picker', 'toast.update': 'Update download started…',
   'toast.openFolder': 'Opened in file explorer',
+  'clip.title': 'Download links detected', 'clip.hint': 'M3U8 links detected in the clipboard. Select the ones to download:',
+  'clip.download': 'Download selected', 'clip.cancel': 'Cancel',
   'win.min': 'Minimize', 'win.max': 'Maximize', 'win.close': 'Close',
   'err.timeout': 'Connection timed out', 'err.canceled': 'Task canceled',
 }

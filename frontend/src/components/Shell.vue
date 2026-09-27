@@ -9,6 +9,7 @@ import TasksView from './TasksView.vue'
 import HistoryView from './HistoryView.vue'
 import SettingsView from './SettingsView.vue'
 import UpdateDialog from './UpdateDialog.vue'
+import ClipboardDialog from './ClipboardDialog.vue'
 import { ui, state, init } from '../store'
 
 // Expose Naive UI message/dialog to the store so non-component code can toast.
@@ -34,5 +35,6 @@ onMounted(() => {
     </div>
     <StatusBar />
     <UpdateDialog />
+    <ClipboardDialog />
   </div>
 </template>

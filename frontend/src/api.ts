@@ -138,6 +138,13 @@ export function onDownloadEvent(h: (e: DownloadEvent) => void): () => void {
   }
 }
 
+// onClipboardLinks subscribes to clipboard-detected m3u8 links emitted by the
+// backend watcher. No-op in the browser preview (no OS clipboard access).
+export function onClipboardLinks(h: (links: string[]) => void): () => void {
+  if (isWails) return EventsOn('clipboard:links', h)
+  return () => {}
+}
+
 // ── browser mock (no Wails backend) ───────────────────────────────────────
 
 interface MockTask {

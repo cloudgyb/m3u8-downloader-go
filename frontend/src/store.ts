@@ -248,6 +248,42 @@ function handleDownloadEvent(e: DownloadEvent) {
     finalize(task, e.status, {done: e.done, error: e.error, file: e.file})
 }
 
+// ── clipboard detection ──────────────────────────────────────────────────
+
+// Links auto-detected from the OS clipboard, accumulated across multiple
+// copies. `checkedLinks` is the user's current selection in the dialog.
+export const pendingLinks = ref<string[]>([])
+export const clipDialogVisible = ref(false)
+export const checkedLinks = ref<string[]>([])
+
+function handleClipboardLinks(links: string[]) {
+    const added: string[] = []
+    for (const link of links) {
+        if (!pendingLinks.value.includes(link)) {
+            pendingLinks.value.push(link)
+            added.push(link)
+        }
+    }
+    if (added.length) checkedLinks.value = [...checkedLinks.value, ...added]
+    if (pendingLinks.value.length) clipDialogVisible.value = true
+}
+
+function closeClipboardDialog() {
+    clipDialogVisible.value = false
+    pendingLinks.value = []
+    checkedLinks.value = []
+}
+
+export function confirmClipboardDownload() {
+    const links = [...checkedLinks.value]
+    closeClipboardDialog()
+    for (const link of links) void addTask(link, '')
+}
+
+export function cancelClipboardDownload() {
+    closeClipboardDialog()
+}
+
 // ── history ──────────────────────────────────────────────────────────────
 
 function pushHistory(h: Omit<HistoryItem, 'id' | 'finishedAt'>) {
@@ -421,4 +457,5 @@ export async function init() {
     })
 
     api.onDownloadEvent(handleDownloadEvent)
+    api.onClipboardLinks(handleClipboardLinks)
 }
