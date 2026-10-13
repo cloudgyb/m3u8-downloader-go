@@ -2,7 +2,12 @@ package backend
 
 import (
 	"context"
+	"encoding/json/v2"
+	"errors"
+	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
@@ -15,11 +20,12 @@ import (
 // App is the backend service bound to the frontend. Every exported method
 // becomes callable from JavaScript through Wails' generated bindings.
 type App struct {
-	ctx              context.Context
-	store            *Store
-	dl               *DownloadManager
-	clipboardWatch   atomic.Bool
-	pendingProtocol  *ProtocolLink
+	ctx             context.Context
+	store           *Store
+	dl              *DownloadManager
+	clipboardWatch  atomic.Bool
+	pendingProtocol *ProtocolLink
+	httpServer      *http.Server
 }
 
 // NewApp creates the application struct and opens the local database.
@@ -38,17 +44,28 @@ func NewApp() *App {
 // OnStartup saves the Wails context used by runtime helpers (dialogs, window).
 func (a *App) OnStartup(ctx context.Context) {
 	a.ctx = ctx
-	a.dl.SetEmitter(func(eventName string, data interface{}) {
+	a.dl.SetEmitter(func(eventName string, data any) {
 		wruntime.EventsEmit(ctx, eventName, data)
 	})
 	a.clipboardWatch.Store(a.GetSettings().ClipboardWatch)
 	a.startClipboardWatcher()
+	a.httpServer = &http.Server{Addr: "127.0.0.1:65530"}
+	a.httpServer.Handler = http.HandlerFunc(a.reqHandle)
+	// start http server in order to handle request from crx
+	go func() {
+		if err := a.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("Server startup failed: %v", err)
+		}
+	}()
 }
 
 // OnShutdown closes the database when the app quits.
-func (a *App) OnShutdown(ctx context.Context) {
+func (a *App) OnShutdown(_ context.Context) {
 	if a.store != nil {
 		_ = a.store.Close()
+	}
+	if a.httpServer != nil {
+		_ = a.httpServer.Close()
 	}
 }
 
@@ -115,6 +132,45 @@ func (a *App) ClearHistory() error {
 		return nil
 	}
 	return a.store.ClearHistory()
+}
+
+// ── crx http request handle ─────────────────────────────────────────────────────────────
+type videoInfo struct {
+	DiscoveryTime uint64 `json:"discoveryTime"`
+	URL           string `json:"url"`
+	Title         string `json:"title"`
+}
+
+func (a *App) reqHandle(w http.ResponseWriter, r *http.Request) {
+	body := r.Body
+	defer func(body io.ReadCloser) {
+		err := body.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}(body)
+	okResp := `{"code": 200,"msg": "success"}`
+	errorResp := `{"code": 400,"msg": "failed"}`
+	resp := okResp
+	defer func() {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		_, err := fmt.Fprint(w, resp)
+		if err != nil {
+			return
+		}
+	}()
+	videoInfo := &videoInfo{}
+	err := json.UnmarshalRead(body, &videoInfo)
+	if err != nil {
+		log.Println(err)
+		resp = errorResp
+		return
+	}
+
+	link := ProtocolLink{URL: videoInfo.URL, Title: videoInfo.Title}
+	wruntime.EventsEmit(a.ctx, "protocol:link", link)
+	wruntime.WindowUnminimise(a.ctx)
+	wruntime.Show(a.ctx)
 }
 
 // ── downloads ────────────────────────────────────────────────────────────
