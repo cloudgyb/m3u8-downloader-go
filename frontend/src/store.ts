@@ -248,24 +248,40 @@ function handleDownloadEvent(e: DownloadEvent) {
     finalize(task, e.status, {done: e.done, error: e.error, file: e.file})
 }
 
-// ── clipboard detection ──────────────────────────────────────────────────
+// ── link detection (clipboard + m3u8:// protocol) ────────────────────────
 
-// Links auto-detected from the OS clipboard, accumulated across multiple
-// copies. `checkedLinks` is the user's current selection in the dialog.
-export const pendingLinks = ref<string[]>([])
+export interface PendingLink {
+    url: string
+    title: string
+}
+
+// Links accumulated across clipboard copies and protocol launches, awaiting
+// the user's confirmation. `checkedLinks` holds the checked URLs (the checkbox
+// group value); each entry's `title` prefills the save-name input.
+export const pendingLinks = ref<PendingLink[]>([])
 export const clipDialogVisible = ref(false)
 export const checkedLinks = ref<string[]>([])
 
-function handleClipboardLinks(links: string[]) {
+function addPendingLinks(links: PendingLink[]) {
     const added: string[] = []
     for (const link of links) {
-        if (!pendingLinks.value.includes(link)) {
-            pendingLinks.value.push(link)
-            added.push(link)
+        if (!pendingLinks.value.some((l) => l.url === link.url)) {
+            pendingLinks.value.push({url: link.url, title: link.title || ''})
+            added.push(link.url)
         }
     }
     if (added.length) checkedLinks.value = [...checkedLinks.value, ...added]
     if (pendingLinks.value.length) clipDialogVisible.value = true
+}
+
+function handleClipboardLinks(links: string[]) {
+    addPendingLinks(links.map((url) => ({url, title: ''})))
+}
+
+// A browser launch via the m3u8:// protocol carries an optional title that
+// prefills the save name.
+function handleProtocolLink(link: {url: string; title: string}) {
+    if (link && link.url) addPendingLinks([link])
 }
 
 function closeClipboardDialog() {
@@ -274,16 +290,10 @@ function closeClipboardDialog() {
     checkedLinks.value = []
 }
 
-// A browser launch via the m3u8:// protocol feeds a single link into the same
-// confirmation dialog used for clipboard detection.
-function handleProtocolUrl(url: string) {
-    if (url) handleClipboardLinks([url])
-}
-
 export function confirmClipboardDownload() {
-    const links = [...checkedLinks.value]
+    const links = pendingLinks.value.filter((l) => checkedLinks.value.includes(l.url))
     closeClipboardDialog()
-    for (const link of links) void addTask(link, '')
+    for (const link of links) void addTask(link.url, link.title)
 }
 
 export function cancelClipboardDownload() {
@@ -464,11 +474,11 @@ export async function init() {
 
     api.onDownloadEvent(handleDownloadEvent)
     api.onClipboardLinks(handleClipboardLinks)
-    api.onProtocolUrl(handleProtocolUrl)
+    api.onProtocolLink(handleProtocolLink)
 
     // A first launch via m3u8:// arrives before the frontend can subscribe to
-    // the "protocol:url" event, so the backend stashes it and we pull it here.
-    void api.takePendingProtocolUrl().then((url) => {
-        if (url) handleProtocolUrl(url)
+    // the "protocol:link" event, so the backend stashes it and we pull it here.
+    void api.takePendingProtocolLink().then((link) => {
+        if (link && link.url) handleProtocolLink(link)
     })
 }

@@ -39,6 +39,6 @@ export function ShowInFolder(arg1:string):Promise<void>;
 
 export function StartDownload(arg1:backend.DownloadRequest):Promise<number>;
 
-export function TakePendingProtocolURL():Promise<string>;
+export function TakePendingProtocolLink():Promise<backend.ProtocolLink>;
 
 export function ToggleMaximize():Promise<void>;

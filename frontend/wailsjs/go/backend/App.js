@@ -74,8 +74,8 @@ export function StartDownload(arg1) {
   return window['go']['backend']['App']['StartDownload'](arg1);
 }
 
-export function TakePendingProtocolURL() {
-  return window['go']['backend']['App']['TakePendingProtocolURL']();
+export function TakePendingProtocolLink() {
+  return window['go']['backend']['App']['TakePendingProtocolLink']();
 }
 
 export function ToggleMaximize() {

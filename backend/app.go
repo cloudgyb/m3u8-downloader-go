@@ -15,11 +15,11 @@ import (
 // App is the backend service bound to the frontend. Every exported method
 // becomes callable from JavaScript through Wails' generated bindings.
 type App struct {
-	ctx                context.Context
-	store              *Store
-	dl                 *DownloadManager
-	clipboardWatch     atomic.Bool
-	pendingProtocolURL string
+	ctx              context.Context
+	store            *Store
+	dl               *DownloadManager
+	clipboardWatch   atomic.Bool
+	pendingProtocol  *ProtocolLink
 }
 
 // NewApp creates the application struct and opens the local database.
@@ -28,11 +28,11 @@ func NewApp() *App {
 	if err != nil {
 		log.Printf("warning: failed to open database (settings/history disabled): %v", err)
 	}
-	return &App{
-		store:              store,
-		dl:                 NewDownloadManager(),
-		pendingProtocolURL: protocolURLFromArgs(os.Args),
+	app := &App{store: store, dl: NewDownloadManager()}
+	if link, ok := protocolLinkFromArgs(os.Args); ok {
+		app.pendingProtocol = &link
 	}
+	return app
 }
 
 // OnStartup saves the Wails context used by runtime helpers (dialogs, window).
@@ -212,17 +212,20 @@ func (a *App) Quit() {
 func (a *App) OnSecondInstanceLaunch(data options.SecondInstanceData) {
 	wruntime.WindowUnminimise(a.ctx)
 	wruntime.Show(a.ctx)
-	if url := protocolURLFromArgs(data.Args); url != "" {
-		wruntime.EventsEmit(a.ctx, "protocol:url", url)
+	if link, ok := protocolLinkFromArgs(data.Args); ok {
+		wruntime.EventsEmit(a.ctx, "protocol:link", link)
 	}
 }
 
-// TakePendingProtocolURL returns the m3u8:// target the app was launched with
-// on its first start (when it wasn't already running), clearing it so it is
-// delivered exactly once. The frontend pulls this on init because the first
-// launch fires before it can subscribe to the "protocol:url" event.
-func (a *App) TakePendingProtocolURL() string {
-	url := a.pendingProtocolURL
-	a.pendingProtocolURL = ""
-	return url
+// TakePendingProtocolLink returns the m3u8:// launch payload the app started
+// with (first launch only), clearing it so it is delivered exactly once. The
+// frontend pulls this on init because the first launch fires before it can
+// subscribe to the "protocol:link" event.
+func (a *App) TakePendingProtocolLink() ProtocolLink {
+	var link ProtocolLink
+	if a.pendingProtocol != nil {
+		link = *a.pendingProtocol
+		a.pendingProtocol = nil
+	}
+	return link
 }

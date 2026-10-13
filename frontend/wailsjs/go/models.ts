@@ -88,6 +88,20 @@ export namespace backend {
 	        this.file = source["file"];
 	    }
 	}
+	export class ProtocolLink {
+	    url: string;
+	    title: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ProtocolLink(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.url = source["url"];
+	        this.title = source["title"];
+	    }
+	}
 	
 	export class Settings {
 	    threads: number;

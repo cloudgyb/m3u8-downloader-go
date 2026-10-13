@@ -48,7 +48,7 @@ const zh: Record<string, string> = {
   'toast.browse': '真实应用中将调用系统目录选择器', 'toast.update': '已开始下载更新…',
   'toast.openFolder': '已在资源管理器中打开',
   'clip.title': '发现下载链接', 'clip.hint': '检测到 M3U8 链接，勾选需要下载的项：',
-  'clip.download': '下载所选', 'clip.cancel': '取消',
+  'clip.download': '下载所选', 'clip.cancel': '取消', 'clip.namePh': '保存文件名（留空自动识别）',
   'win.min': '最小化', 'win.max': '最大化', 'win.close': '关闭',
   'err.timeout': '网络超时', 'err.canceled': '任务已取消',
 }
@@ -99,7 +99,7 @@ const en: Record<string, string> = {
   'toast.browse': 'The real app uses the OS directory picker', 'toast.update': 'Update download started…',
   'toast.openFolder': 'Opened in file explorer',
   'clip.title': 'Download links detected', 'clip.hint': 'M3U8 links detected. Select the ones to download:',
-  'clip.download': 'Download selected', 'clip.cancel': 'Cancel',
+  'clip.download': 'Download selected', 'clip.cancel': 'Cancel', 'clip.namePh': 'Save file name (empty = auto-detect)',
   'win.min': 'Minimize', 'win.max': 'Maximize', 'win.close': 'Close',
   'err.timeout': 'Connection timed out', 'err.canceled': 'Task canceled',
 }
