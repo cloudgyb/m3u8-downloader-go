@@ -85,6 +85,9 @@ func (a *App) startClipboardWatcher() {
 			}
 			if links := extractM3u8Links(text); len(links) > 0 {
 				wruntime.EventsEmit(ctx, "clipboard:links", links)
+				// 让窗口显示
+				wruntime.WindowUnminimise(ctx)
+				wruntime.Show(ctx)
 			}
 		}
 	}()

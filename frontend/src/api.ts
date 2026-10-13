@@ -145,6 +145,20 @@ export function onClipboardLinks(h: (links: string[]) => void): () => void {
   return () => {}
 }
 
+// onProtocolUrl subscribes to m3u8:// links launched from the browser/OS while
+// the app is already running.
+export function onProtocolUrl(h: (url: string) => void): () => void {
+  if (isWails) return EventsOn('protocol:url', h)
+  return () => {}
+}
+
+// takePendingProtocolUrl returns (and clears) the m3u8:// link the app was
+// launched with on first start, when the app wasn't already running.
+export async function takePendingProtocolUrl(): Promise<string> {
+  if (isWails) return backend.TakePendingProtocolURL()
+  return ''
+}
+
 // ── browser mock (no Wails backend) ───────────────────────────────────────
 
 interface MockTask {

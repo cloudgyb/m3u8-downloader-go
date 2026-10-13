@@ -274,6 +274,12 @@ function closeClipboardDialog() {
     checkedLinks.value = []
 }
 
+// A browser launch via the m3u8:// protocol feeds a single link into the same
+// confirmation dialog used for clipboard detection.
+function handleProtocolUrl(url: string) {
+    if (url) handleClipboardLinks([url])
+}
+
 export function confirmClipboardDownload() {
     const links = [...checkedLinks.value]
     closeClipboardDialog()
@@ -458,4 +464,11 @@ export async function init() {
 
     api.onDownloadEvent(handleDownloadEvent)
     api.onClipboardLinks(handleClipboardLinks)
+    api.onProtocolUrl(handleProtocolUrl)
+
+    // A first launch via m3u8:// arrives before the frontend can subscribe to
+    // the "protocol:url" event, so the backend stashes it and we pull it here.
+    void api.takePendingProtocolUrl().then((url) => {
+        if (url) handleProtocolUrl(url)
+    })
 }

@@ -42,6 +42,10 @@ export function Minimize() {
   return window['go']['backend']['App']['Minimize']();
 }
 
+export function OnSecondInstanceLaunch(arg1) {
+  return window['go']['backend']['App']['OnSecondInstanceLaunch'](arg1);
+}
+
 export function PauseDownload(arg1) {
   return window['go']['backend']['App']['PauseDownload'](arg1);
 }
@@ -68,6 +72,10 @@ export function ShowInFolder(arg1) {
 
 export function StartDownload(arg1) {
   return window['go']['backend']['App']['StartDownload'](arg1);
+}
+
+export function TakePendingProtocolURL() {
+  return window['go']['backend']['App']['TakePendingProtocolURL']();
 }
 
 export function ToggleMaximize() {
