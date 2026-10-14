@@ -145,14 +145,14 @@ export function onClipboardLinks(h: (links: string[]) => void): () => void {
   return () => {}
 }
 
-// onProtocolLink subscribes to m3u8:// links launched from the browser/OS
+// onProtocolLink subscribes to m3u8downloader:// links launched from the browser/OS
 // while the app is already running.
 export function onProtocolLink(h: (link: {url: string; title: string}) => void): () => void {
   if (isWails) return EventsOn('protocol:link', h)
   return () => {}
 }
 
-// takePendingProtocolLink returns (and clears) the m3u8:// link the app was
+// takePendingProtocolLink returns (and clears) the m3u8downloader:// link the app was
 // launched with on first start, when the app wasn't already running.
 export async function takePendingProtocolLink(): Promise<{url: string; title: string}> {
   if (isWails) return backend.TakePendingProtocolLink()

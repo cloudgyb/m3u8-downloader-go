@@ -248,7 +248,7 @@ function handleDownloadEvent(e: DownloadEvent) {
     finalize(task, e.status, {done: e.done, error: e.error, file: e.file})
 }
 
-// ── link detection (clipboard + m3u8:// protocol) ────────────────────────
+// ── link detection (clipboard + m3u8downloader:// protocol) ────────────────────────
 
 export interface PendingLink {
     url: string
@@ -278,7 +278,7 @@ function handleClipboardLinks(links: string[]) {
     addPendingLinks(links.map((url) => ({url, title: ''})))
 }
 
-// A browser launch via the m3u8:// protocol carries an optional title that
+// A browser launch via the m3u8downloader:// protocol carries an optional title that
 // prefills the save name.
 function handleProtocolLink(link: {url: string; title: string}) {
     if (link && link.url) addPendingLinks([link])
@@ -476,7 +476,7 @@ export async function init() {
     api.onClipboardLinks(handleClipboardLinks)
     api.onProtocolLink(handleProtocolLink)
 
-    // A first launch via m3u8:// arrives before the frontend can subscribe to
+    // A first launch via m3u8downloader:// arrives before the frontend can subscribe to
     // the "protocol:link" event, so the backend stashes it and we pull it here.
     void api.takePendingProtocolLink().then((link) => {
         if (link && link.url) handleProtocolLink(link)

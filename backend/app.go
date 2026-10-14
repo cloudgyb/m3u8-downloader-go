@@ -273,7 +273,7 @@ func (a *App) OnSecondInstanceLaunch(data options.SecondInstanceData) {
 	}
 }
 
-// TakePendingProtocolLink returns the m3u8:// launch payload the app started
+// TakePendingProtocolLink returns the m3u8downloader:// launch payload the app started
 // with (first launch only), clearing it so it is delivered exactly once. The
 // frontend pulls this on init because the first launch fires before it can
 // subscribe to the "protocol:link" event.

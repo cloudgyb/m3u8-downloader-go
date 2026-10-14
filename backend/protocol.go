@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// ProtocolLink is a m3u8:// launch payload: the http(s) download target plus an
+// ProtocolLink is a m3u8downloader:// launch payload: the http(s) download target plus an
 // optional suggested save name from the "title" query parameter.
 type ProtocolLink struct {
 	URL   string `json:"url"`
@@ -13,10 +13,10 @@ type ProtocolLink struct {
 }
 
 // m3u8Scheme is the custom URL scheme registered with the OS by the installer.
-// The protocol uses the form "m3u8://download?title=<name>&url=<http(s) url>".
-const m3u8Scheme = "m3u8://"
+// The protocol uses the form "m3u8downloader://download?title=<name>&url=<http(s) url>".
+const m3u8Scheme = "m3u8downloader://"
 
-// parseProtocolLink parses a single m3u8:// launch argument into its download
+// parseProtocolLink parses a single m3u8downloader:// launch argument into its download
 // target and suggested save name. The "url" parameter is always last and is
 // taken verbatim to the end of the argument, because m3u8 targets frequently
 // carry their own auth/sign query params ("?"/"&") that would otherwise be
@@ -63,7 +63,7 @@ func parseProtocolLink(arg string) (ProtocolLink, bool) {
 	return ProtocolLink{URL: target, Title: title}, true
 }
 
-// protocolLinkFromArgs returns the first m3u8:// launch payload found in the
+// protocolLinkFromArgs returns the first m3u8downloader:// launch payload found in the
 // launch arguments, or false when the app wasn't launched through the protocol.
 func protocolLinkFromArgs(args []string) (ProtocolLink, bool) {
 	for _, arg := range args {
