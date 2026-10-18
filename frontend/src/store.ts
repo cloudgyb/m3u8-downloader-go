@@ -17,7 +17,6 @@ export function toast(content: string, type: 'info' | 'success' | 'warning' | 'e
     if (ui.message) ui.message[type](content)
 }
 
-const SEED_KEY = 'm3u8dl.seeded'
 let seq = 0
 let histSeq = 0
 
@@ -128,8 +127,7 @@ async function startTask(task: Task) {
     task.status = 'downloading'
     task.startedAt = Date.now()
     try {
-        const backendId = await api.startDownload(buildRequest(task))
-        task.backendId = backendId
+        task.backendId = await api.startDownload(buildRequest(task))
     } catch (e) {
         finalize(task, 'failed', {done: 0, error: e instanceof Error ? e.message : String(e), file: ''})
     }
@@ -400,39 +398,6 @@ export const statusText = computed(() => {
 
 // ── init ─────────────────────────────────────────────────────────────────
 
-const DEMO_HISTORY: Array<Omit<HistoryItem, 'id'>> = [
-    {
-        name: '蓝色星球 · 第二季 E01.mkv',
-        url: 'https://demo.cdn.example/blue-planet-s2e1.m3u8',
-        size: 1331 * 1024 * 1024,
-        status: 'completed',
-        finishedAt: '2026-09-19 14:30',
-        duration: '12:34',
-        error: '',
-        file: ''
-    },
-    {
-        name: '数据结构 · 第 3 讲.mp4',
-        url: 'https://demo.cdn.example/ds03.m3u8',
-        size: 0,
-        status: 'failed',
-        finishedAt: '2026-09-18 09:15',
-        duration: '00:42',
-        error: 'err.timeout',
-        file: ''
-    },
-    {
-        name: '国风音乐会 · 2023 跨年.mkv',
-        url: 'https://demo.cdn.example/concert.m3u8',
-        size: 843 * 1024 * 1024,
-        status: 'completed',
-        finishedAt: '2026-09-15 21:02',
-        duration: '08:11',
-        error: '',
-        file: ''
-    },
-]
-
 export async function init() {
     try {
         const s = await api.getSettings()
@@ -445,16 +410,6 @@ export async function init() {
         state.history = await api.getHistory()
     } catch {
         state.history = []
-    }
-
-    // Seed demo history exactly once, so the History view matches the prototype on first run.
-    if (!state.history.length && !localStorage.getItem(SEED_KEY)) {
-        localStorage.setItem(SEED_KEY, '1')
-        for (const h of DEMO_HISTORY) {
-            void api.addHistory({...h, id: 0}).then((id) => {
-                state.history.push({...h, id})
-            })
-        }
     }
 
     state.lang = localStorage.getItem('m3u8dl.lang') === 'en' ? 'en' : 'zh'
