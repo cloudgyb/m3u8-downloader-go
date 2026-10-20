@@ -4,7 +4,7 @@ import {lang, t} from './i18n'
 import type {DownloadEvent} from './api'
 import * as api from './api'
 import {deriveName, fmtDuration, nowStr} from './utils'
-import type {HistFilter, HistoryItem, Lang, Settings, Task, TaskStatus, Theme, View} from './types'
+import type {HistFilter, HistoryItem, Lang, Settings, Task, TaskRecord, TaskStatus, Theme, View} from './types'
 import {DEFAULT_SETTINGS} from './types'
 
 // Injected by the app shell once it mounts inside the Naive UI providers.
@@ -115,17 +115,43 @@ function buildRequest(task: Task): api.StartDownloadRequest {
     return {
         url: task.url,
         name: task.name,
-        saveDir: state.settings.saveDir,
+        saveDir: task.saveDir,
         threads: task.threads,
         variantUri: task.variantUri,
-        format: state.settings.format,
-        proxy: currentProxy(),
+        format: task.format,
+        proxy: task.proxy,
     }
+}
+
+// persistTasks snapshots the active task list to the backend store so queued,
+// paused and in-flight downloads survive an app restart. Progress is best-effort
+// (the authoritative resume state lives in each download's manifest.json).
+// Persists are chained so async Wails calls commit in snapshot order (otherwise
+// an older snapshot could overwrite a newer one and drop a task).
+let persistChain: Promise<unknown> = Promise.resolve()
+
+function persistTasks() {
+    const records: TaskRecord[] = state.tasks
+        .filter((t) => t.status === 'queued' || t.status === 'downloading' || t.status === 'paused')
+        .map((t) => ({
+            name: t.name,
+            url: t.url,
+            saveDir: t.saveDir,
+            threads: t.threads,
+            variantUri: t.variantUri,
+            format: t.format,
+            proxy: t.proxy,
+            status: t.status as TaskRecord['status'],
+            done: t.done,
+            total: t.total,
+        }))
+    persistChain = persistChain.then(() => api.saveTasks(records)).catch(() => {})
 }
 
 async function startTask(task: Task) {
     task.status = 'downloading'
     task.startedAt = Date.now()
+    persistTasks()
     try {
         task.backendId = await api.startDownload(buildRequest(task))
     } catch (e) {
@@ -164,8 +190,12 @@ export async function addTask(url: string, name: string, variantUri = ''): Promi
         done: 0,
         speed: 0,
         startedAt: 0,
+        saveDir: state.settings.saveDir,
+        format: state.settings.format,
+        proxy: currentProxy(),
     }
     state.tasks.push(task)
+    persistTasks()
     schedule(task)
     toast(t('toast.added'))
     navigate('tasks')
@@ -178,13 +208,22 @@ export function pauseTask(id: number) {
     if (t.backendId != null) void api.pauseDownload(t.backendId)
     t.status = 'paused'
     t.speed = 0
+    persistTasks()
+    promoteQueued()
 }
 
 export function resumeTask(id: number) {
     const t = state.tasks.find((x) => x.id === id)
     if (!t) return
-    if (t.backendId != null) void api.resumeDownload(t.backendId)
-    t.status = 'downloading'
+    if (t.backendId != null) {
+        void api.resumeDownload(t.backendId)
+        t.status = 'downloading'
+        persistTasks()
+        return
+    }
+    // Restored (or never-started) task: relaunch the download; the backend
+    // resumes from the on-disk manifest and partial segments.
+    void startTask(t)
 }
 
 export function cancelTask(id: number) {
@@ -206,20 +245,26 @@ export function pauseAll() {
             t.speed = 0
         }
     })
+    persistTasks()
 }
 
 export function resumeAll() {
     state.tasks.forEach((t) => {
-        if (t.status === 'paused') {
-            if (t.backendId != null) void api.resumeDownload(t.backendId)
+        if (t.status !== 'paused') return
+        if (t.backendId != null) {
+            void api.resumeDownload(t.backendId)
             t.status = 'downloading'
+        } else {
+            void startTask(t)
         }
     })
+    persistTasks()
 }
 
 function finalize(task: Task, status: TaskStatus, info: { done: number; error: string; file: string }) {
     const idx = state.tasks.indexOf(task)
     if (idx !== -1) state.tasks.splice(idx, 1)
+    persistTasks()
     pushHistory({
         name: task.name,
         url: task.url,
@@ -234,6 +279,8 @@ function finalize(task: Task, status: TaskStatus, info: { done: number; error: s
     promoteQueued()
 }
 
+let lastProgressPersist = 0
+
 function handleDownloadEvent(e: DownloadEvent) {
     const task = state.tasks.find((x) => x.backendId === e.id)
     if (!task) return
@@ -241,6 +288,13 @@ function handleDownloadEvent(e: DownloadEvent) {
         task.done = e.done
         task.total = e.total
         task.speed = e.speed
+        // Throttle progress persistence so a mid-download restart keeps a
+        // near-current byte count without hammering the store on every tick.
+        const now = Date.now()
+        if (now - lastProgressPersist > 1000) {
+            lastProgressPersist = now
+            persistTasks()
+        }
         return
     }
     finalize(task, e.status, {done: e.done, error: e.error, file: e.file})
@@ -410,6 +464,36 @@ export async function init() {
         state.history = await api.getHistory()
     } catch {
         state.history = []
+    }
+
+    try {
+        const tasks = await api.getTasks()
+        for (const p of tasks) {
+            if (!p.url) continue
+            // Restore every unfinished task (downloading / paused / queued) as
+            // "paused": the app quit mid-run, so downloads were stopped and the
+            // user must explicitly resume them (progress is preserved in the
+            // on-disk manifest). Nothing auto-starts on launch.
+            state.tasks.push({
+                id: ++seq,
+                backendId: null,
+                name: p.name || deriveName(p.url),
+                url: p.url,
+                threads: p.threads > 0 ? p.threads : state.settings.threads,
+                variantUri: p.variantUri || '',
+                status: 'paused',
+                total: p.total || 0,
+                done: p.done || 0,
+                speed: 0,
+                startedAt: 0,
+                saveDir: p.saveDir || state.settings.saveDir,
+                format: p.format === 'ts' || p.format === 'mp4' ? p.format : state.settings.format,
+                proxy: p.proxy && typeof p.proxy === 'object' ? p.proxy : currentProxy(),
+            })
+        }
+        persistTasks()
+    } catch {
+        /* keep empty */
     }
 
     state.lang = localStorage.getItem('m3u8dl.lang') === 'en' ? 'en' : 'zh'

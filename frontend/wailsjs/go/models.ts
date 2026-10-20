@@ -137,6 +137,54 @@ export namespace backend {
 	        this.clipboardWatch = source["clipboardWatch"];
 	    }
 	}
+	export class TaskRecord {
+	    name: string;
+	    url: string;
+	    saveDir: string;
+	    threads: number;
+	    variantUri: string;
+	    format: string;
+	    proxy: ProxyConfig;
+	    status: string;
+	    done: number;
+	    total: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new TaskRecord(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.url = source["url"];
+	        this.saveDir = source["saveDir"];
+	        this.threads = source["threads"];
+	        this.variantUri = source["variantUri"];
+	        this.format = source["format"];
+	        this.proxy = this.convertValues(source["proxy"], ProxyConfig);
+	        this.status = source["status"];
+	        this.done = source["done"];
+	        this.total = source["total"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class Variant {
 	    uri: string;
 	    bandwidth: number;

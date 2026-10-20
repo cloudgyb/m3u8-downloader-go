@@ -29,6 +29,23 @@ type HistoryItem struct {
 	File       string `json:"file"`
 }
 
+// TaskRecord is a download task in the queue (queued, downloading or paused)
+// persisted so it survives an app restart and can be resumed. `done`/`total`
+// are best-effort (the authoritative resume progress lives in the download's
+// manifest.json on disk).
+type TaskRecord struct {
+	Name       string      `json:"name"`
+	URL        string      `json:"url"`
+	SaveDir    string      `json:"saveDir"`
+	Threads    int         `json:"threads"`
+	VariantURI string      `json:"variantUri"`
+	Format     string      `json:"format"` // "mp4" | "ts"
+	Proxy      ProxyConfig `json:"proxy"`
+	Status     string      `json:"status"` // queued | downloading | paused
+	Done       int64       `json:"done"`
+	Total      int64       `json:"total"`
+}
+
 const defaultVersion = "v1.2.0"
 
 func defaultSettings() Settings {

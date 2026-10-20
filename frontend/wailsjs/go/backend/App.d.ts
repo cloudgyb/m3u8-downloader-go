@@ -17,6 +17,8 @@ export function GetHistory():Promise<Array<backend.HistoryItem>>;
 
 export function GetSettings():Promise<backend.Settings>;
 
+export function GetTasks():Promise<Array<backend.TaskRecord>>;
+
 export function GetVersion():Promise<string>;
 
 export function HasFFmpeg():Promise<boolean>;
@@ -34,6 +36,8 @@ export function RemoveHistory(arg1:number):Promise<void>;
 export function ResumeDownload(arg1:number):Promise<void>;
 
 export function SaveSettings(arg1:backend.Settings):Promise<void>;
+
+export function SaveTasks(arg1:Array<backend.TaskRecord>):Promise<void>;
 
 export function ShowInFolder(arg1:string):Promise<void>;
 

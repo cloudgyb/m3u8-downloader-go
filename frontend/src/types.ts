@@ -19,6 +19,21 @@ export interface Settings {
   clipboardWatch: boolean
 }
 
+export interface Variant {
+  uri: string
+  bandwidth: number
+  resolution: string
+  codecs: string
+  name: string
+}
+
+export interface ProxyConfig {
+  enabled: boolean
+  type: string
+  host: string
+  port: number
+}
+
 export interface Task {
   id: number
   backendId: number | null
@@ -31,6 +46,9 @@ export interface Task {
   done: number
   speed: number
   startedAt: number
+  saveDir: string
+  format: 'ts' | 'mp4'
+  proxy: ProxyConfig
 }
 
 export interface HistoryItem {
@@ -45,12 +63,18 @@ export interface HistoryItem {
   file: string
 }
 
-export interface Variant {
-  uri: string
-  bandwidth: number
-  resolution: string
-  codecs: string
+// TaskRecord is the persisted form of an active task, restored on app start.
+export interface TaskRecord {
   name: string
+  url: string
+  saveDir: string
+  threads: number
+  variantUri: string
+  format: 'ts' | 'mp4'
+  proxy: ProxyConfig
+  status: 'queued' | 'downloading' | 'paused'
+  done: number
+  total: number
 }
 
 export const DEFAULT_SETTINGS: Settings = {

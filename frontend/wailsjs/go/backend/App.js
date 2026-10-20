@@ -30,6 +30,10 @@ export function GetSettings() {
   return window['go']['backend']['App']['GetSettings']();
 }
 
+export function GetTasks() {
+  return window['go']['backend']['App']['GetTasks']();
+}
+
 export function GetVersion() {
   return window['go']['backend']['App']['GetVersion']();
 }
@@ -64,6 +68,10 @@ export function ResumeDownload(arg1) {
 
 export function SaveSettings(arg1) {
   return window['go']['backend']['App']['SaveSettings'](arg1);
+}
+
+export function SaveTasks(arg1) {
+  return window['go']['backend']['App']['SaveTasks'](arg1);
 }
 
 export function ShowInFolder(arg1) {

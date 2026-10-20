@@ -134,6 +134,27 @@ func (a *App) ClearHistory() error {
 	return a.store.ClearHistory()
 }
 
+// ── tasks (in-progress downloads) ─────────────────────────────────────────
+
+func (a *App) GetTasks() []TaskRecord {
+	if a.store == nil {
+		return []TaskRecord{}
+	}
+	items, err := a.store.GetTasks()
+	if err != nil {
+		log.Printf("GetTasks: %v", err)
+		return []TaskRecord{}
+	}
+	return items
+}
+
+func (a *App) SaveTasks(tasks []TaskRecord) error {
+	if a.store == nil {
+		return nil
+	}
+	return a.store.SaveTasks(tasks)
+}
+
 // ── crx http request handle ─────────────────────────────────────────────────────────────
 type videoInfo struct {
 	DiscoveryTime uint64 `json:"discoveryTime"`

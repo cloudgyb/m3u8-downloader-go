@@ -58,6 +58,19 @@ func (s *Store) migrate() error {
 			error       TEXT NOT NULL DEFAULT '',
 			file        TEXT NOT NULL DEFAULT ''
 		);
+		CREATE TABLE IF NOT EXISTS tasks (
+			id         INTEGER PRIMARY KEY AUTOINCREMENT,
+			name       TEXT NOT NULL,
+			url        TEXT NOT NULL,
+			save_dir   TEXT NOT NULL DEFAULT '',
+			threads    INTEGER NOT NULL DEFAULT 8,
+			variant_uri TEXT NOT NULL DEFAULT '',
+			format     TEXT NOT NULL DEFAULT 'mp4',
+			proxy      TEXT NOT NULL DEFAULT '',
+			status     TEXT NOT NULL DEFAULT 'queued',
+			done       INTEGER NOT NULL DEFAULT 0,
+			total      INTEGER NOT NULL DEFAULT 0
+		);
 	`)
 	if err != nil {
 		return err
@@ -177,4 +190,61 @@ func (s *Store) DeleteHistory(id int64) (int64, error) {
 func (s *Store) ClearHistory() error {
 	_, err := s.db.Exec(`DELETE FROM history`)
 	return err
+}
+
+// ── tasks (in-progress downloads, restored across restarts) ───────────────
+
+func (s *Store) GetTasks() ([]TaskRecord, error) {
+	rows, err := s.db.Query(
+		`SELECT name, url, save_dir, threads, variant_uri, format, proxy, status, done, total
+		 FROM tasks ORDER BY id ASC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]TaskRecord, 0)
+	for rows.Next() {
+		var t TaskRecord
+		var proxyRaw string
+		if err := rows.Scan(&t.Name, &t.URL, &t.SaveDir, &t.Threads, &t.VariantURI, &t.Format, &proxyRaw, &t.Status, &t.Done, &t.Total); err != nil {
+			return nil, err
+		}
+		if proxyRaw != "" {
+			_ = json.Unmarshal([]byte(proxyRaw), &t.Proxy)
+		}
+		items = append(items, t)
+	}
+	return items, rows.Err()
+}
+
+// SaveTasks replaces the persisted task list wholesale, preserving order.
+func (s *Store) SaveTasks(tasks []TaskRecord) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec(`DELETE FROM tasks`); err != nil {
+		return err
+	}
+	stmt, err := tx.Prepare(
+		`INSERT INTO tasks (name, url, save_dir, threads, variant_uri, format, proxy, status, done, total)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for _, t := range tasks {
+		proxyRaw := ""
+		if b, err := json.Marshal(t.Proxy); err == nil {
+			proxyRaw = string(b)
+		}
+		if _, err := stmt.Exec(t.Name, t.URL, t.SaveDir, t.Threads, t.VariantURI, t.Format, proxyRaw, t.Status, t.Done, t.Total); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
 }

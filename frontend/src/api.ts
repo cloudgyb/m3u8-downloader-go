@@ -1,7 +1,10 @@
 import * as backend from '../wailsjs/go/backend/App'
 import { EventsOn } from '../wailsjs/runtime/runtime'
 import { DEFAULT_SETTINGS } from './types'
-import type { Settings, HistoryItem, Variant } from './types'
+import type { Settings, HistoryItem, Variant, ProxyConfig, TaskRecord } from './types'
+
+// Re-export so callers can reference the shared proxy type via `api.ProxyConfig`.
+export type { ProxyConfig }
 
 // When running under `wails dev`/`wails build`, Wails injects `window.go`.
 // In a plain browser (vite preview) it is absent, so we fall back to
@@ -11,15 +14,9 @@ const isWails = typeof w.go !== 'undefined' && !!w.go?.backend?.App
 
 const LS_SETTINGS = 'm3u8dl.settings'
 const LS_HISTORY = 'm3u8dl.history'
+const LS_TASKS = 'm3u8dl.tasks'
 
 // ── download event & request types ────────────────────────────────────────
-
-export interface ProxyConfig {
-  enabled: boolean
-  type: string
-  host: string
-  port: number
-}
 
 export interface StartDownloadRequest {
   url: string
@@ -85,6 +82,18 @@ export async function removeHistory(id: number): Promise<void> {
 export async function clearHistory(): Promise<void> {
   if (isWails) return backend.ClearHistory()
   localStorage.removeItem(LS_HISTORY)
+}
+
+// ── tasks (in-progress downloads, restored on start) ──────────────────────
+
+export async function getTasks(): Promise<TaskRecord[]> {
+  if (isWails) return (await backend.GetTasks()) as TaskRecord[]
+  return readJSON<TaskRecord[]>(LS_TASKS, [])
+}
+
+export async function saveTasks(tasks: TaskRecord[]): Promise<void> {
+  if (isWails) return backend.SaveTasks(tasks as never)
+  localStorage.setItem(LS_TASKS, JSON.stringify(tasks))
 }
 
 // ── downloads ─────────────────────────────────────────────────────────────
