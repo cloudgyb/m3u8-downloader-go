@@ -142,3 +142,10 @@ An M3U8 URL for testing:
 ```
 https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
 ```
+
+## Legal Notices
+
+Before using this software, please read and understand the following legal documents:
+
++ [Disclaimer](build/disclaimer.md)
++ [End User License Agreement](build/eula.md)

@@ -142,3 +142,10 @@ m3u8-downloader-go/
 ```
 https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
 ```
+
+## 法律声明
+
+在使用本软件之前，请务必阅读并理解以下法律文件：
+
++ [免责声明](build/disclaimer.md)
++ [最终用户许可协议](build/eula.md)
