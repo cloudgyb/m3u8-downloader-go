@@ -55,6 +55,8 @@ ManifestDPIAware true
 # !define MUI_WELCOMEFINISHPAGE_BITMAP "resources\leftimage.bmp" #Include this to add a bitmap on the left side of the Welcome Page. Must be a size of 164x314
 !define MUI_FINISHPAGE_NOAUTOCLOSE # Wait on the INSTFILES page so the user can take a look into the details of the installation steps
 !define MUI_ABORTWARNING # This will warn the user if they exit from the installer.
+!define MUI_FINISHPAGE_RUN "$INSTDIR\${PRODUCT_EXECUTABLE}" # Show a checkbox to launch the app after install.
+!define MUI_FINISHPAGE_RUN_TEXT "Run ${INFO_PRODUCTNAME}"
 
 !insertmacro MUI_PAGE_WELCOME # Welcome to the installer page.
 # !insertmacro MUI_PAGE_LICENSE "resources\eula.txt" # Adds a EULA page to the installer
@@ -85,6 +87,29 @@ ShowInstDetails show # This will always show the installation details.
 
 Function .onInit
    !insertmacro wails.checkArchitecture
+
+   # Uninstall any previously installed version before reinstalling.
+   Call UninstallOldVersion
+FunctionEnd
+
+# Runs the previously installed version's uninstaller silently, so that
+# reinstalling doesn't leave stale files or a duplicate registry entry.
+Function UninstallOldVersion
+    SetRegView 64
+    ReadRegStr $R0 HKLM "${UNINST_KEY}" "UninstallString"
+    ${If} $R0 == ""
+        ReadRegStr $R0 HKCU "${UNINST_KEY}" "UninstallString"
+    ${EndIf}
+    ${If} $R0 != ""
+        # $R0 is quoted, e.g. "C:\Program Files\...\uninstall.exe"
+        StrCpy $R1 $R0 "" 1    # drop the leading quote
+        StrCpy $R1 $R1 -1      # drop the trailing quote
+        ${GetParent} "$R1" $R2 # $R2 = the previous install directory
+        DetailPrint "Uninstalling previous version"
+        # `_?=` makes the uninstaller run in place (not copy to $TEMP) so
+        # ExecWait actually waits for it to finish before installing.
+        ExecWait '"$R1" /S _?=$R2' $0
+    ${EndIf}
 FunctionEnd
 
 Section
