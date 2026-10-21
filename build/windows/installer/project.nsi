@@ -1,4 +1,4 @@
-Unicode true
+﻿Unicode true
 
 ####
 ## Please note: Template replacements don't work in this file. They are provided with default defines like
@@ -49,6 +49,8 @@ VIAddVersionKey "ProductName"     "${INFO_PRODUCTNAME}"
 ManifestDPIAware true
 
 !include "MUI.nsh"
+!include "StrFunc.nsh"
+${StrLoc} # Defines the StrLoc function used to detect a running process.
 
 !define MUI_ICON "..\icon.ico"
 !define MUI_UNICON "..\icon.ico"
@@ -59,7 +61,7 @@ ManifestDPIAware true
 !define MUI_FINISHPAGE_RUN_TEXT "Run ${INFO_PRODUCTNAME}"
 
 !insertmacro MUI_PAGE_WELCOME # Welcome to the installer page.
-# !insertmacro MUI_PAGE_LICENSE "resources\eula.txt" # Adds a EULA page to the installer
+!insertmacro MUI_PAGE_LICENSE "resources\eula.txt" # EULA page; the user must accept before install.
 !insertmacro MUI_PAGE_DIRECTORY # In which folder install page.
 !insertmacro MUI_PAGE_INSTFILES # Installing page.
 !insertmacro MUI_PAGE_FINISH # Finished installation page.
@@ -88,13 +90,17 @@ ShowInstDetails show # This will always show the installation details.
 Function .onInit
    !insertmacro wails.checkArchitecture
 
-   # Uninstall any previously installed version before reinstalling.
-   Call UninstallOldVersion
+   # Default to the previous install directory so an existing install is
+   # overwritten in place instead of reinstalled side by side.
+   Call GetPreviousInstallDir
+
+   # If the app is already running, ask the user to terminate it first.
+   Call CheckAndTerminateRunningApp
 FunctionEnd
 
-# Runs the previously installed version's uninstaller silently, so that
-# reinstalling doesn't leave stale files or a duplicate registry entry.
-Function UninstallOldVersion
+# Reads the previous version's install directory from the registry and uses
+# it as the default $INSTDIR.
+Function GetPreviousInstallDir
     SetRegView 64
     ReadRegStr $R0 HKLM "${UNINST_KEY}" "UninstallString"
     ${If} $R0 == ""
@@ -105,10 +111,27 @@ Function UninstallOldVersion
         StrCpy $R1 $R0 "" 1    # drop the leading quote
         StrCpy $R1 $R1 -1      # drop the trailing quote
         ${GetParent} "$R1" $R2 # $R2 = the previous install directory
-        DetailPrint "Uninstalling previous version"
-        # `_?=` makes the uninstaller run in place (not copy to $TEMP) so
-        # ExecWait actually waits for it to finish before installing.
-        ExecWait '"$R1" /S _?=$R2' $0
+        StrCpy $INSTDIR $R2
+    ${EndIf}
+FunctionEnd
+
+# If ${PRODUCT_EXECUTABLE} is already running, offer to terminate it before
+# overwriting, otherwise abort the install.
+Function CheckAndTerminateRunningApp
+    nsExec::ExecToStack 'tasklist /FI "IMAGENAME eq ${PRODUCT_EXECUTABLE}" /NH'
+    Pop $0  # return code
+    Pop $1  # stdout
+    ${StrLoc} $2 $1 "${PRODUCT_EXECUTABLE}" ">"
+    ${If} $2 != ""
+        MessageBox MB_YESNO|MB_ICONEXCLAMATION "${INFO_PRODUCTNAME} 正在运行，是否终止它并继续安装？" IDYES terminate IDNO cancel
+        Goto done
+        terminate:
+            nsExec::Exec 'taskkill /F /IM ${PRODUCT_EXECUTABLE}'
+            Sleep 1000
+            Goto done
+        cancel:
+            Abort
+        done:
     ${EndIf}
 FunctionEnd
 
