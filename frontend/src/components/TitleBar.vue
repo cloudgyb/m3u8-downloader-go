@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SvgIcon from './SvgIcon.vue'
+import appicon from '../assets/images/appicon.png'
 import { t } from '../i18n'
 import { state, toast } from '../store'
 import * as api from '../api'
@@ -23,9 +24,7 @@ function onTitlebarDblclick(e: MouseEvent) {
 <template>
   <header class="titlebar" @dblclick="onTitlebarDblclick">
     <div class="titlebar-left">
-      <span class="app-mark" aria-hidden="true">
-        <SvgIcon name="download" :width="2" />
-      </span>
+      <img class="app-mark" :src="appicon" alt="" aria-hidden="true" />
       <span class="app-title">{{ t('app.name') }}</span>
       <span class="version-pill">{{ state.settings.currentVersion }}</span>
     </div>

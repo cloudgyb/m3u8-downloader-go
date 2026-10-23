@@ -231,7 +231,7 @@ func (a *App) CancelDownload(id int64) {
 // ── meta / dialogs / window ─────────────────────────────────────────────
 
 func (a *App) GetVersion() string {
-	return defaultVersion
+	return version
 }
 
 // BrowseDir opens the native directory picker and returns the chosen path.

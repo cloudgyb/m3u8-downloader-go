@@ -83,6 +83,12 @@ svg { display: block; }
 .mono { font-family: var(--font-mono); font-size: 13px; letter-spacing: -0.01em; }
 .nowrap { white-space: nowrap; }
 .mono-input .n-input__input { font-family: var(--font-mono); font-size: 13px; }
+
+/* Dark theme: Naive UI's select dropdown has no border by default (box-shadow
+   only); add one so it reads clearly against the page. */
+:root[data-theme="dark"] .n-base-select-menu {
+  border: 1px solid #4a5670;
+}
 .od-truncate { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .od-stat { display: grid; gap: 2px; }
 .od-stat > * { display: block; }
@@ -107,11 +113,13 @@ svg { display: block; }
 }
 .titlebar-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .app-mark {
-  width: 22px; height: 22px; border-radius: 6px; flex: none;
-  background: var(--accent); color: #fff;
-  display: grid; place-items: center;
+  width: 22px; height: 22px; flex: none;
+  display: block; object-fit: contain;
+  padding: 2px;
+  background: #dbeafe;
+  border: 1px solid var(--border-soft);
+  border-radius: 5px;
 }
-.app-mark svg { width: 14px; height: 14px; }
 .app-title { font-weight: 700; font-size: 13px; color: var(--fg); }
 .version-pill {
   font-family: var(--font-mono); font-size: 11px; font-weight: 600;

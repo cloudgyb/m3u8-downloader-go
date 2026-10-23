@@ -88,6 +88,6 @@ export const DEFAULT_SETTINGS: Settings = {
   proxyHost: '127.0.0.1',
   proxyPort: 7890,
   updateMode: 'auto',
-  currentVersion: 'v1.2.0',
+  currentVersion: 'v1.0.0',
   clipboardWatch: true,
 }

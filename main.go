@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 
 	"github.com/cloudgyb/m3u8-downloader/backend"
 
@@ -13,7 +14,13 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+//go:embed wails.json
+var wailsConfig []byte
+
 func main() {
+	// Derive the app version from wails.json so the UI always matches the build.
+	backend.SetVersion(versionFromConfig())
+
 	// Create an instance of the app structure
 	app := backend.NewApp()
 
@@ -43,4 +50,21 @@ func main() {
 	if err != nil {
 		println("Error:", err.Error())
 	}
+}
+
+// versionFromConfig reads info.productVersion from the embedded wails.json and
+// returns it as "vX.Y.Z" so the UI version always matches the build config.
+func versionFromConfig() string {
+	var cfg struct {
+		Info struct {
+			ProductVersion string `json:"productVersion"`
+		} `json:"info"`
+	}
+	if err := json.Unmarshal(wailsConfig, &cfg); err != nil {
+		return ""
+	}
+	if cfg.Info.ProductVersion == "" {
+		return ""
+	}
+	return "v" + cfg.Info.ProductVersion
 }

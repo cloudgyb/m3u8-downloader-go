@@ -85,9 +85,31 @@ export const darkThemeOverrides: GlobalThemeOverrides = {
     textColorFocusPrimary: '#ffffff',
     textColorDisabledPrimary: '#dddddd',
   },
-  Input: shape.Input,
-  InputNumber: shape.InputNumber,
-  Select: shape.Select,
+  Input: {
+    ...shape.Input,
+    border: '1px solid #4a5670',
+    borderHover: '1px solid #5c6a86',
+    borderDisabled: '1px solid #4a5670',
+  },
+  InputNumber: {
+    ...shape.InputNumber,
+    peers: {
+      Input: {
+        border: '1px solid #4a5670',
+        borderHover: '1px solid #5c6a86',
+        borderDisabled: '1px solid #4a5670',
+      },
+    },
+  },
+  Select: {
+    ...shape.Select,
+    peers: {
+      InternalSelection: {
+        border: '1px solid #4a5670',
+        borderHover: '1px solid #5c6a86',
+      },
+    },
+  },
   Radio: shape.Radio,
   Modal: shape.Modal,
 }

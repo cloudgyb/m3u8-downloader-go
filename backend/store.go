@@ -125,6 +125,8 @@ func (s *Store) GetSettings() (Settings, error) {
 	if cfg.Threads <= 0 {
 		cfg.Threads = 8
 	}
+	// The version always reflects the current build, not a stale persisted value.
+	cfg.CurrentVersion = version
 	return cfg, nil
 }
 

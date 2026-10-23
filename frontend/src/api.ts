@@ -221,7 +221,7 @@ function mockStartDownload(req: StartDownloadRequest): number {
 
 export async function getVersion(): Promise<string> {
   if (isWails) return backend.GetVersion()
-  return 'v1.2.0'
+  return 'v1.0.0'
 }
 
 export async function browseDir(): Promise<string> {

@@ -46,7 +46,16 @@ type TaskRecord struct {
 	Total      int64       `json:"total"`
 }
 
-const defaultVersion = "v1.2.0"
+// version is the app version shown in the UI. It defaults to "v1.0.0" and is
+// set from wails.json's info.productVersion at startup (single source of truth).
+var version = "v1.0.0"
+
+// SetVersion overrides the app version, e.g. "v" + productVersion.
+func SetVersion(v string) {
+	if v != "" {
+		version = v
+	}
+}
 
 func defaultSettings() Settings {
 	return Settings{
@@ -60,7 +69,7 @@ func defaultSettings() Settings {
 		ProxyHost:      "127.0.0.1",
 		ProxyPort:      7890,
 		UpdateMode:     "auto",
-		CurrentVersion: defaultVersion,
+		CurrentVersion: version,
 		ClipboardWatch: true,
 	}
 }
