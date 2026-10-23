@@ -48,17 +48,21 @@ VIAddVersionKey "ProductName"     "${INFO_PRODUCTNAME}"
 # Enable HiDPI support. https://nsis.sourceforge.io/Reference/ManifestDPIAware
 ManifestDPIAware true
 
-!include "MUI.nsh"
+!include "MUI2.nsh"
 !include "StrFunc.nsh"
 ${StrLoc} # Defines the StrLoc function used to detect a running process.
 
 !define MUI_ICON "..\icon.ico"
 !define MUI_UNICON "..\icon.ico"
-# !define MUI_WELCOMEFINISHPAGE_BITMAP "resources\leftimage.bmp" #Include this to add a bitmap on the left side of the Welcome Page. Must be a size of 164x314
+
+# Left image on the welcome / finish pages (164x314).
+!define MUI_WELCOMEFINISHPAGE_BITMAP "resources\welcome.bmp"
+
+!define MUI_INSTFILESPAGE_PROGRESSBAR_COLORED "2563eb" # Brand-colored progress bar.
 !define MUI_FINISHPAGE_NOAUTOCLOSE # Wait on the INSTFILES page so the user can take a look into the details of the installation steps
 !define MUI_ABORTWARNING # This will warn the user if they exit from the installer.
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${PRODUCT_EXECUTABLE}" # Show a checkbox to launch the app after install.
-!define MUI_FINISHPAGE_RUN_TEXT "Run ${INFO_PRODUCTNAME}"
+!define MUI_FINISHPAGE_RUN_TEXT "运行 ${INFO_PRODUCTNAME}"
 
 !insertmacro MUI_PAGE_WELCOME # Welcome to the installer page.
 !insertmacro MUI_PAGE_LICENSE "resources\eula.txt" # EULA page; the user must accept before install.
@@ -68,7 +72,11 @@ ${StrLoc} # Defines the StrLoc function used to detect a running process.
 
 !insertmacro MUI_UNPAGE_INSTFILES # Uinstalling page
 
-!insertmacro MUI_LANGUAGE "English" # Set the Language of the installer
+!insertmacro MUI_LANGUAGE "SimpChinese" # Set the Language of the installer
+
+# Fix: the license-page hint referenced "我同意(I)" while the accept button
+# reads "我接受(I)"; align the hint with the button label.
+LangString MUI_INNERTEXT_LICENSE_BOTTOM ${LANG_SIMPCHINESE} "如果你接受许可证的条款，请点击 [我接受(I)] 继续安装。你必须在接受后才能安装 $(^NameDA) 。"
 
 ## The following two statements can be used to sign the installer and the uninstaller. The path to the binaries are provided in %1
 #!uninstfinalize 'signtool --file "%1"'
@@ -86,6 +94,7 @@ OutFile "..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe" # Name of the inst
   InstallDir "$PROGRAMFILES64\${INFO_COMPANYNAME}\${INFO_PRODUCTNAME}"
 !endif # Default installing folder ($PROGRAMFILES is Program Files folder).
 ShowInstDetails show # This will always show the installation details.
+BrandingText "M3U8 下载器 · CloudGYB" # Footer text (bottom-left).
 
 Function .onInit
    !insertmacro wails.checkArchitecture
