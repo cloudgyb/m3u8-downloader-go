@@ -3,15 +3,19 @@ import {computed} from 'vue'
 import {NButton} from 'naive-ui'
 import SvgIcon from './SvgIcon.vue'
 import Segmented from './Segmented.vue'
+import Pagination from './Pagination.vue'
 import {t} from '../i18n'
 import {
   clearHistory,
   filteredHistory,
   openFolder,
+  pagedHistory,
+  histPageCount,
   redoTask,
   refreshHistory,
   removeHistoryItem,
   setHistFilter,
+  setHistPage,
   state
 } from '../store'
 import {fmtBytes} from '../utils'
@@ -64,7 +68,7 @@ function badgeClass(status: string): string {
       <p>{{ t('hist.empty') }}</p>
     </div>
 
-    <div v-for="h in filteredHistory" :key="h.id" class="hist-row">
+    <div v-for="h in pagedHistory" :key="h.id" class="hist-row">
       <div class="task-icon" :class="'tone-' + toneForStatus(h.status)">
         <SvgIcon :name="iconNameForStatus(h.status)"/>
       </div>
@@ -109,5 +113,13 @@ function badgeClass(status: string): string {
         </button>
       </div>
     </div>
+
+    <Pagination
+      v-if="filteredHistory.length"
+      :page="state.histPage"
+      :page-count="histPageCount"
+      :total="filteredHistory.length"
+      @update:page="setHistPage"
+    />
   </div>
 </template>

@@ -2,10 +2,11 @@
 import { computed } from 'vue'
 import { NButton, NProgress, NEmpty } from 'naive-ui'
 import SvgIcon from './SvgIcon.vue'
+import Pagination from './Pagination.vue'
 import { t } from '../i18n'
 import {
   state, navigate, pauseTask, resumeTask, cancelTask, pauseAll, resumeAll,
-  activeCount, totalSpeed, doneCount,
+  activeCount, totalSpeed, doneCount, pagedTasks, tasksPageCount, setTasksPage,
 } from '../store'
 import { fmtBytes, fmtSpeed, fmtEta } from '../utils'
 import { iconNameForStatus, toneForStatus } from '../icons'
@@ -71,7 +72,7 @@ function badgeClass(status: string): string {
       <NButton type="primary" @click="navigate('download')">{{ t('tasks.go') }}</NButton>
     </div>
 
-    <div v-for="task in state.tasks" :key="task.id" class="task-row">
+    <div v-for="task in pagedTasks" :key="task.id" class="task-row">
       <div class="task-icon" :class="'tone-' + toneForStatus(task.status)">
         <SvgIcon :name="iconNameForStatus(task.status)" />
       </div>
@@ -123,5 +124,13 @@ function badgeClass(status: string): string {
         </button>
       </div>
     </div>
+
+    <Pagination
+      v-if="state.tasks.length"
+      :page="state.tasksPage"
+      :page-count="tasksPageCount"
+      :total="state.tasks.length"
+      @update:page="setTasksPage"
+    />
   </div>
 </template>

@@ -18,6 +18,8 @@ export const ICONS: Record<string, string> = {
   up: '<circle cx="12" cy="12" r="9"/><path d="M16 12l-4-4-4 4"/><path d="M12 16V8"/>',
   minimize: '<path d="M5 12h14"/>',
   maximize: '<rect x="5" y="5" width="14" height="14" rx="2"/>',
+  'chevron-left': '<path d="m15 18-6-6 6-6"/>',
+  'chevron-right': '<path d="m9 18 6-6-6-6"/>',
 }
 
 export function iconNameForStatus(status: string): string {

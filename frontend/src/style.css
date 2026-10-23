@@ -296,6 +296,31 @@ svg { display: block; }
 .empty .hint { margin: 0 0 6px; }
 .empty .btn { margin-top: 6px; }
 
+/* ─── pagination ──────────────────────────────────────────── */
+.pagination {
+  display: flex; align-items: center; justify-content: flex-end; gap: 6px;
+  padding: 12px 16px; border-top: 1px solid var(--border-soft);
+}
+.pg-total { font-size: 12px; color: var(--muted); margin-right: 10px; }
+.pg-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 30px; height: 30px; padding: 0 8px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--fg-2); cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  transition: background var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+.pg-btn svg { width: 15px; height: 15px; }
+.pg-btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pg-btn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
+.pg-ellipsis { min-width: 22px; text-align: center; color: var(--muted); }
+@media (hover: hover) {
+  .pg-btn:hover:not(:disabled):not(.on) { border-color: var(--accent); color: var(--accent-ink); }
+}
+
 /* ─── settings ─────────────────────────────────────────────── */
 .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
 .settings-grid .card { padding: 20px; }

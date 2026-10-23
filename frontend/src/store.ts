@@ -1,4 +1,4 @@
-import {computed, reactive, ref} from 'vue'
+import {computed, reactive, ref, watch} from 'vue'
 import type {DialogApi, MessageApi} from 'naive-ui'
 import {lang, t} from './i18n'
 import type {DownloadEvent} from './api'
@@ -27,6 +27,12 @@ export const state = reactive({
     tasks: [] as Task[],
     history: [] as HistoryItem[],
     histFilter: 'all' as HistFilter,
+    // Pagination state (client-side): the full lists stay in memory and the
+    // current page is sliced out for display.
+    tasksPage: 1,
+    tasksPageSize: 20,
+    histPage: 1,
+    histPageSize: 20,
     currentView: 'download' as View,
 })
 
@@ -368,6 +374,7 @@ export const filteredHistory = computed<HistoryItem[]>(() => {
 
 export function setHistFilter(f: HistFilter) {
     state.histFilter = f
+    state.histPage = 1
 }
 
 export async function removeHistoryItem(id: number) {
@@ -433,6 +440,52 @@ export function openFolder(h: HistoryItem) {
         toast(t('toast.openFolder'), 'info')
     }
 }
+
+// ── pagination (client-side) ─────────────────────────────────────────────
+// The full task/history lists stay in memory; these computeds slice the
+// current page for display. Pages are clamped when a list shrinks (task
+// finalize, history delete/clear/filter change).
+
+export const tasksPageCount = computed(() =>
+    Math.max(1, Math.ceil(state.tasks.length / state.tasksPageSize)),
+)
+
+export const pagedTasks = computed(() => {
+    const start = (state.tasksPage - 1) * state.tasksPageSize
+    return state.tasks.slice(start, start + state.tasksPageSize)
+})
+
+export const histPageCount = computed(() =>
+    Math.max(1, Math.ceil(filteredHistory.value.length / state.histPageSize)),
+)
+
+export const pagedHistory = computed(() => {
+    const start = (state.histPage - 1) * state.histPageSize
+    return filteredHistory.value.slice(start, start + state.histPageSize)
+})
+
+export function setTasksPage(p: number) {
+    state.tasksPage = p
+}
+
+export function setHistPage(p: number) {
+    state.histPage = p
+}
+
+// Keep the current page valid when the underlying list shrinks.
+watch(
+    () => state.tasks.length,
+    () => {
+        if (state.tasksPage > tasksPageCount.value) state.tasksPage = tasksPageCount.value
+    },
+)
+
+watch(
+    () => filteredHistory.value.length,
+    () => {
+        if (state.histPage > histPageCount.value) state.histPage = histPageCount.value
+    },
+)
 
 // ── stats (status bar / tasks header) ────────────────────────────────────
 
